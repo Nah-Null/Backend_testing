@@ -1,6 +1,6 @@
 // ป้องกันการไม่ใส่ข้อมูล
 
-const User = require('../models/user')
+const User = require('../models/User')
 
 module.exports = (req, res) => {
     User.create(req.body).then(() => {

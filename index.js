@@ -20,9 +20,11 @@ app.use(express.static('public'))
 app.use(express.json())
 app.use(express.urlencoded())
 app.use(flash())
+
 app.use(expressSession({
     secret:"node secret"
 }))
+
 app.set('view engine','ejs')
 
 
