@@ -1,40 +1,52 @@
-const express = require('express')
-const app = express()
-const ejs = require('ejs')
-const mongoose = require('mongoose')
-const expressSession = require('express-session')
-const flash = require('connect-flash')
+const express = require('express');
+const app = express();
+const ejs = require('ejs');
+const mongoose = require('mongoose');
+const expressSession = require('express-session');
+const flash = require('connect-flash');
 
-// Connect MongoDB
-mongoose.connect('mongodb+srv://noobboy:Dragon_Killer@cluster0.kuhyr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',{
-    useNewUrlParser: true
+// Connect to MongoDB
+mongoose.connect('mongodb+srv://Pu:12345@cluster0.oncuo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true, // เพิ่มเพื่อป้องกัน warning
 })
+    .then(() => console.log("Connected to MongoDB"))
+    .catch(err => console.error("MongoDB connection error:", err));
 
-const indexcontro = require('./controllers/indexcontro') //Objectเก็บหน้าแรก
-const logincontro = require('./controllers/logincontro') //Objectเก็บหน้า log-in
-const registercontro = require('./controllers/registercontro') //Objectเก็บหน้า register
-const storecontro = require('./controllers/storeUser') //Objectเก็บการป้องกันการไม่ใส่ข้อมูล
+// Import controllers
+const indexcontro = require('./controllers/indexcontro'); // หน้าแรก
+const logincontro = require('./controllers/logincontro'); // หน้า log-in
+const registercontro = require('./controllers/registercontro'); // หน้า register
+const storecontro = require('./controllers/storeUser'); // การป้องกันการไม่ใส่ข้อมูล
 
-
-app.use(express.static('public'))
-app.use(express.json())
-app.use(express.urlencoded())
-app.use(flash())
-
+// Middleware
+app.use(express.static('public'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // ปรับเพิ่มเพื่อแก้การ warning
 app.use(expressSession({
-    secret:"node secret"
-}))
+    secret: "node secret",
+    resave: false,
+    saveUninitialized: true,
+}));
+app.use(flash());
 
-app.set('view engine','ejs')
+// Flash middleware for EJS
+app.use((req, res, next) => {
+    res.locals.validationErrors = req.flash('validationErrors');
+    res.locals.data = req.flash('data');
+    next();
+});
 
+// Set EJS as view engine
+app.set('view engine', 'ejs');
 
+// Routes
+app.get('/', indexcontro); // หน้าแรก
+app.get('/login', logincontro); // หน้า log-in
+app.get('/register', registercontro); // หน้า register
+app.post('/user/register', storecontro); // การป้องกันการไม่ใส่ข้อมูล
 
-app.get('/',indexcontro) //เรียกใช้หน้า register
-app.get('/login',logincontro) //เรียกใช้หน้า register
-app.get('/register',registercontro) //เรียกใช้หน้า register
-app.post('/user/register',storecontro)//เรียกใช้การป้องกันการไม่ใส่ข้อมูล
-
-
-app.listen(4000,() => {
-    console.log("\n running port 4000 pass \n")
-})
+// Start server
+app.listen(4000, () => {
+    console.log("\nServer running on port 4000\n");
+});
